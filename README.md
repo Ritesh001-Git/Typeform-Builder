@@ -185,6 +185,135 @@ See the [Frontend](#frontend) setup instructions above.
 
 The frontend expects the backend to already be running at `NEXT_PUBLIC_API_URL`.
 
+## Deployment
+
+The application is currently deployed on **AWS EC2** and is accessible through a public HTTP endpoint.
+
+## AWS Deployment Architecture
+
+```text
+                         Internet
+                            │
+                            │ HTTP :80
+                            ▼
+                    ┌─────────────────┐
+                    │    AWS EC2      │
+                    │                 │
+                    │     Nginx       │
+                    │      :80        │
+                    └────────┬────────┘
+                             │
+                 ┌───────────┴───────────┐
+                 │                       │
+                 ▼                       ▼
+          Next.js Frontend        FastAPI Backend
+             :3000                    :8000
+                                         │
+                                         ▼
+                                  SQLite Database
+```
+
+### AWS Services Used
+
+* **Amazon EC2** – Hosts the Next.js frontend and FastAPI backend.
+* **Elastic IP** – Provides a persistent public IP address for accessing the application.
+* **Security Group** – Controls inbound and outbound traffic to the EC2 instance.
+
+  * Port `22` – SSH access.
+  * Port `80` – HTTP application access.
+  * Ports `3000` and `8000` are not exposed publicly; they are accessed internally through Nginx.
+* **Nginx** – Acts as a reverse proxy and routes requests:
+
+  * `/` → Next.js frontend running on port `3000`
+  * `/api/*` → FastAPI backend running on port `8000`
+* **SQLite** – Used as the database for the current deployment.
+
+## Terraform Infrastructure
+
+AWS infrastructure was provisioned using **Terraform** instead of creating the resources manually.
+
+Terraform was used to create and configure:
+
+* EC2 instance(s)
+* Elastic IP
+* Security Group
+* Required networking configuration
+* EC2 instance configuration required for application deployment
+
+This makes the infrastructure reproducible and allows the AWS resources to be recreated using Infrastructure as Code.
+
+## Application Deployment
+
+The application is deployed on the EC2 instance as two services:
+
+```text
+Next.js Frontend
+      │
+      │ Port 3000
+      ▼
+   Nginx :80
+      │
+      │ /api/*
+      ▼
+FastAPI Backend
+      │
+      ▼
+SQLite Database
+```
+
+Both the frontend and backend are managed using **systemd services**, allowing them to start automatically when the EC2 instance starts and restart automatically if a service fails.
+
+The application can currently be accessed using:
+
+```text
+http://18.214.229.58/
+```
+
+## Current Deployment Limitation
+
+The current deployment uses **HTTP instead of HTTPS** for simplicity and rapid deployment.
+
+Therefore, communication between the client and the EC2 instance is currently **not encrypted**. This configuration is suitable for development, demonstration, and assignment evaluation, but it is **not recommended for production use**.
+
+## Future Deployment Architecture
+
+For a production-ready deployment, the architecture can be improved by introducing an **AWS Application Load Balancer (ALB)**.
+
+```text
+                         Internet
+                            │
+                            ▼
+                  ┌───────────────────┐
+                  │   Application     │
+                  │   Load Balancer   │
+                  │       (ALB)       │
+                  └─────────┬─────────┘
+                            │
+                     HTTPS / HTTP
+                            │
+                            ▼
+                  ┌───────────────────┐
+                  │      EC2 /        │
+                  │  Backend Server   │
+                  └─────────┬─────────┘
+                            │
+                     FastAPI :8000
+                            │
+                            ▼
+                         Database
+```
+
+In the future architecture:
+
+* Users will communicate with the **Application Load Balancer** instead of directly accessing the backend EC2 instance.
+* The ALB will act as the public entry point and route incoming requests to the appropriate backend target.
+* HTTPS can be configured using an **AWS Certificate Manager (ACM)** certificate.
+* EC2 instances can be placed behind the ALB and their backend ports can be restricted to traffic originating from the ALB Security Group.
+* This architecture provides better **security, scalability, availability, and traffic management**.
+* The application can later be extended with an **Auto Scaling Group** to run multiple backend instances behind the ALB.
+
+The current EC2 deployment provides a simple working deployment, while the ALB-based architecture is the planned direction for a more secure and production-ready system.
+
 ## Assumptions
 
 * No authentication: anyone with the dashboard URL can manage all forms (matches the assignment's "no unnecessary authentication" guidance). A real product would scope forms to a logged-in workspace.
