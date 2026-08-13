@@ -10,7 +10,7 @@ Formly lets you create a form, add questions of several types, publish it to
 a public link, and review responses with simple summary stats — the core
 loop of a product like Typeform, kept intentionally small.
 
-## 2. Features
+## 2. Features 
 
 - **Dashboard** — list forms, see draft/published status and response
   counts, create/rename/duplicate/delete, publish/unpublish.
