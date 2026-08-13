@@ -1,4 +1,6 @@
 # FastAPI application entrypoint
+
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,9 +11,11 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Typeform Clone API")
 
+origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
