@@ -1,51 +1,35 @@
 # Formly — A Typeform Builder
 
-A small, from-scratch clone of Typeform: a form builder with a live preview
-and a one-question-at-a-time respondent experience, built with Next.js +
-TypeScript on the frontend and FastAPI + SQLite on the backend.
+A small, from-scratch clone of Typeform: a form builder with a live preview and a one-question-at-a-time respondent experience, built with Next.js + TypeScript on the frontend and FastAPI + SQLite on the backend.
 
-## 1. Overview
+## Overview
 
-Formly lets you create a form, add questions of several types, publish it to
-a public link, and review responses with simple summary stats — the core
-loop of a product like Typeform, kept intentionally small.
+Formly lets you create a form, add questions of several types, publish it to a public link, and review responses with simple summary stats — the core loop of a product like Typeform, kept intentionally small.
 
-## 2. Features 
+## Features
 
-- **Dashboard** — list forms, see draft/published status and response
-  counts, create/rename/duplicate/delete, publish/unpublish.
-- **Builder** — three-pane editor (question list → question settings → live
-  preview), drag-and-drop reordering, 8 question types, autosave.
-- **Live preview** — the exact same `QuestionRenderer` component used by the
-  public form, so what you see in the builder is what respondents get.
-- **Public respondent experience** (`/form/[slug]`) — full-screen,
-  one-question-at-a-time, keyboard navigation (Enter/↑), progress bar, smooth
-  transitions, a thank-you screen.
-- **Validation** — required fields, email format, numeric input, valid
-  option selection, rating range — enforced on both the client (instant
-  feedback) and the server (source of truth).
-- **Responses page** — per-question stats (option counts, rating averages,
-  text response counts) plus a list of individual responses you can open in
-  detail.
-- **Settings page** — publishing controls, the shareable link, and
-  "coming soon" placeholders for logic jumps, integrations, collaboration,
-  payments, file uploads, and advanced auth.
-- **Seed data** — 2 forms (1 published, 1 draft) and some sample responses so
-  the app is immediately explorable.
+* **Dashboard** — list forms, see draft/published status and response counts, create/rename/duplicate/delete, publish/unpublish.
+* **Builder** — three-pane editor (question list → question settings → live preview), drag-and-drop reordering, 8 question types, autosave.
+* **Live preview** — the exact same `QuestionRenderer` component used by the public form, so what you see in the builder is what respondents get.
+* **Public respondent experience** (`/form/[slug]`) — full-screen, one-question-at-a-time, keyboard navigation (Enter/↑), progress bar, smooth transitions, a thank-you screen.
+* **Validation** — required fields, email format, numeric input, valid option selection, rating range — enforced on both the client (instant feedback) and the server (source of truth).
+* **Responses page** — per-question stats (option counts, rating averages, text response counts) plus a list of individual responses you can open in detail.
+* **Settings page** — publishing controls, the shareable link, and "coming soon" placeholders for logic jumps, integrations, collaboration, payments, file uploads, and advanced auth.
+* **Seed data** — 2 forms (1 published, 1 draft) and some sample responses so the app is immediately explorable.
 
-## 3. Tech stack
+## Tech Stack
 
-| Layer     | Choice                                              |
-|-----------|------------------------------------------------------|
-| Frontend  | Next.js (App Router) + TypeScript + Tailwind CSS      |
-| Drag & drop | `@dnd-kit` (question reordering only)               |
-| Backend   | Python + FastAPI + SQLAlchemy                        |
-| Database  | SQLite                                                |
-| Testing   | pytest + FastAPI's `TestClient`                       |
+| Layer       | Choice                                           |
+| ----------- | ------------------------------------------------ |
+| Frontend    | Next.js (App Router) + TypeScript + Tailwind CSS |
+| Drag & drop | `@dnd-kit` (question reordering only)            |
+| Backend     | Python + FastAPI + SQLAlchemy                    |
+| Database    | SQLite                                           |
+| Testing     | pytest + FastAPI's `TestClient`                  |
 
-## 4. Architecture
+## Architecture
 
-```
+```text
 Browser
   │  fetch (JSON)
   ▼
@@ -60,9 +44,9 @@ FastAPI backend
 SQLite (typeform_clone.db)
 ```
 
-## 5. Folder structure
+## Project Structure
 
-```
+```text
 typeform-clone/
 ├── backend/
 │   ├── main.py            # FastAPI app, CORS, router registration
@@ -92,9 +76,9 @@ typeform-clone/
     └── hooks/                # useDebouncedCallback
 ```
 
-## 6. Database schema
+## Database Schema
 
-```
+```text
 Form
  ├─ id            PK
  ├─ title
@@ -126,36 +110,36 @@ Answer
  └─ value         text (JSON-encoded when the raw value isn't a string)
 ```
 
-Relationships: one `Form` has many `Question`s and many `Response`s; one
-`Response` has many `Answer`s, each tied to the `Question` it answers.
-Deleting a `Form` cascades to its questions and responses (and their
-answers), so there's nothing orphaned to clean up manually.
+### Relationships
+
+One `Form` has many `Question`s and many `Response`s; one `Response` has many `Answer`s, each tied to the `Question` it answers.
+
+Deleting a `Form` cascades to its questions and responses (and their answers), so there's nothing orphaned to clean up manually.
+
+### Configuration Storage
 
 `config` is stored as a JSON string rather than as separate `Option` rows.
-This keeps the schema to four tables instead of five, and question
-configuration is small and always read/written as a whole, so a normalized
-`Option` table would add a join without adding real flexibility.
 
-## 7. API overview
+This keeps the schema to four tables instead of five, and question configuration is small and always read/written as a whole, so a normalized `Option` table would add a join without adding real flexibility.
 
-```
-GET    /api/forms                              list forms (+ response_count)
-POST   /api/forms                               create a form
-GET    /api/forms/{id}                          get a form with its questions
-PUT    /api/forms/{id}                          update title and/or questions
-DELETE /api/forms/{id}                          delete a form
-POST   /api/forms/{id}/duplicate                duplicate a form
-POST   /api/forms/{id}/publish                  publish (needs ≥1 question)
-POST   /api/forms/{id}/unpublish                unpublish
+## API
 
-GET    /api/forms/{id}/responses                responses + per-question stats
-GET    /api/responses/{id}                      a single response's answers
+| Method   | Endpoint                             | Purpose                         |
+| -------- | ------------------------------------ | ------------------------------- |
+| `GET`    | `/api/forms`                         | List forms (+ response_count)   |
+| `POST`   | `/api/forms`                         | Create a form                   |
+| `GET`    | `/api/forms/{id}`                    | Get a form with its questions   |
+| `PUT`    | `/api/forms/{id}`                    | Update title and/or questions   |
+| `DELETE` | `/api/forms/{id}`                    | Delete a form                   |
+| `POST`   | `/api/forms/{id}/duplicate`          | Duplicate a form                |
+| `POST`   | `/api/forms/{id}/publish`            | Publish (needs ≥1 question)     |
+| `POST`   | `/api/forms/{id}/unpublish`          | Unpublish                       |
+| `GET`    | `/api/forms/{id}/responses`          | Responses + per-question stats  |
+| `GET`    | `/api/responses/{id}`                | A single response's answers     |
+| `GET`    | `/api/public/forms/{slug}`           | Published form, for respondents |
+| `POST`   | `/api/public/forms/{slug}/responses` | Submit a response               |
 
-GET    /api/public/forms/{slug}                 published form, for respondents
-POST   /api/public/forms/{slug}/responses       submit a response
-```
-
-## 8. Setup instructions
+## Setup
 
 ### Backend
 
@@ -177,41 +161,41 @@ npm run dev
 
 Open `http://localhost:3000` for the dashboard.
 
-## 9. Environment variables
+## Environment Variables
 
-| Variable               | Where     | Default                  | Purpose                       |
-|-------------------------|-----------|---------------------------|--------------------------------|
-| `NEXT_PUBLIC_API_URL`  | frontend  | `http://localhost:8000`  | Base URL the frontend calls    |
+| Variable              | Where    | Default                 | Purpose                     |
+| --------------------- | -------- | ----------------------- | --------------------------- |
+| `NEXT_PUBLIC_API_URL` | frontend | `http://localhost:8000` | Base URL the frontend calls |
 
-The backend has no required environment variables; it always writes to
-`./typeform_clone.db` next to `main.py`.
+The backend has no required environment variables; it always writes to `./typeform_clone.db` next to `main.py`.
 
-## 10. Running the backend
+## Running the Backend
 
-See "Setup instructions" above. API docs are auto-generated by FastAPI at
-`http://localhost:8000/docs`.
+See the [Backend](#backend) setup instructions above.
 
-## 11. Running the frontend
+API docs are auto-generated by FastAPI at:
 
-See "Setup instructions" above. The frontend expects the backend to already
-be running at `NEXT_PUBLIC_API_URL`.
+```text
+http://localhost:8000/docs
+```
 
-## 12. Assumptions
+## Running the Frontend
 
-- No authentication: anyone with the dashboard URL can manage all forms
-  (matches the assignment's "no unnecessary authentication" guidance).
-  A real product would scope forms to a logged-in workspace.
-- A submitted response is final — there's no edit-after-submit flow, which
-  matches Typeform's own respondent experience.
-- "Duplicate" copies the form's questions but resets status to draft and
-  starts with zero responses.
-- Deleting a form permanently deletes its responses (no soft-delete/undo).
+See the [Frontend](#frontend) setup instructions above.
 
-## 13. Future improvements
+The frontend expects the backend to already be running at `NEXT_PUBLIC_API_URL`.
 
-- Real logic jumps (branching based on earlier answers).
-- CSV export of responses.
-- Per-question drag-and-drop for options beyond up/down buttons.
-- Optimistic UI for publish/unpublish and delete (currently a normal
-  request/await).
-- Pagination for forms with a very large number of responses.
+## Assumptions
+
+* No authentication: anyone with the dashboard URL can manage all forms (matches the assignment's "no unnecessary authentication" guidance). A real product would scope forms to a logged-in workspace.
+* A submitted response is final — there's no edit-after-submit flow, which matches Typeform's own respondent experience.
+* "Duplicate" copies the form's questions but resets status to draft and starts with zero responses.
+* Deleting a form permanently deletes its responses (no soft-delete/undo).
+
+## Future Improvements
+
+* Real logic jumps (branching based on earlier answers).
+* CSV export of responses.
+* Per-question drag-and-drop for options beyond up/down buttons.
+* Optimistic UI for publish/unpublish and delete (currently a normal request/await).
+* Pagination for forms with a very large number of responses.
