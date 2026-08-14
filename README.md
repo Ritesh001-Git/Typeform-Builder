@@ -26,6 +26,9 @@ Formly lets you create a form, add questions of several types, publish it to a p
 | Backend     | Python + FastAPI + SQLAlchemy                    |
 | Database    | SQLite                                           |
 | Testing     | pytest + FastAPI's `TestClient`                  |
+| Infrastructure     | Terraform + AWS                           |
+| Deployment  | AWS EC2 + Elastic IP + Security Group + Nginx    |
+
 
 ## Architecture
 
