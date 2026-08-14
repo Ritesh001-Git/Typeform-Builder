@@ -275,7 +275,7 @@ http://18.214.229.58/
 
 The current deployment uses **HTTP instead of HTTPS** for simplicity and rapid deployment.
 
-Therefore, communication between the client and the EC2 instance is currently **not encrypted**. This configuration is suitable for development, demonstration, and assignment evaluation, but it is **not recommended for production use**.
+Therefore, communication between the client and the EC2 instance is currently **not encrypted**.
 
 ## Future Deployment Architecture
 
